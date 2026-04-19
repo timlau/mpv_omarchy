@@ -4355,7 +4355,7 @@ local function validate_user_opts()
     end
   end
 
-  -- Load colors from config file instead of script-opt
+  -- Load colors from Omarchy generated mpv_colors.conf 
   local config_path = os.getenv("HOME") .. "/.config/omarchy/current/theme/mpv_colors.conf"
   local config_file = io.open(config_path, "r")
   
