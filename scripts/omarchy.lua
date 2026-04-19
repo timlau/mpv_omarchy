@@ -4355,7 +4355,28 @@ local function validate_user_opts()
     end
   end
 
-  opt.read_options(user_opts, "colors")
+  -- Load colors from config file instead of script-opt
+  local config_path = os.getenv("HOME") .. "/.config/omarchy/current/theme/mpv_colors.conf"
+  local config_file = io.open(config_path, "r")
+  
+  if config_file then
+    for line in config_file:lines() do
+      -- Skip comments and empty lines
+      if not line:match("^%s*#") and not line:match("^%s*$") then
+        local key, value = line:match("^%s*([^=]+)%s*=%s*(.+)%s*$")
+        if key and value then
+          key = key:match("^%s*(.-)%s*$") -- trim whitespace
+          value = value:match("^%s*(.-)%s*$") -- trim whitespace
+          if user_opts[key] ~= nil then
+            user_opts[key] = value
+          end
+        end
+      end
+    end
+    config_file:close()
+  else
+    msg.warn("Could not load colors from " .. config_path .. ". Using defaults.")
+  end
 
   local colors = {
     user_opts.osc_color,
