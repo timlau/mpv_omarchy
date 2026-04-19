@@ -1,5 +1,5 @@
 -- This script is mpv skin for Omarcy based on
--- ModernZ v0.2.9 (https://github.com/Samillion/ModernZ) here is  a derivative of the original
+-- ModernZ v0.2.9 (https://github.com/Samillion/ModernZ) here is a derivative of the original
 -- mpv-osc-modern by maoiscat and subsequent forks:
 --   * cyl0/ModernX
 --   * dexeonify/ModernX
@@ -30,7 +30,7 @@ local utils = require("mp.utils")
 -- do not touch, change them in script-opt/omarchy.conf
 local user_opts = {
   -- Language and display
-  language = "en", -- set language (for available options, see: https://github.com/Samillion/ModernZ/blob/main/docs/TRANSLATIONS.md)
+  language = "en", -- set language 
   icon_theme = "fluent", -- set icon theme. accepts "fluent" or "material"
   font = "mpv-osd-symbols", -- font for the OSC (default: mpv-osd-symbols or the one set in mpv.conf)
 
