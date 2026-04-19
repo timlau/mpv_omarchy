@@ -1,7 +1,6 @@
--- This script is a modified version of ModernZ v0.2.9 (https://github.com/Samillion/ModernZ)
---
--- This script is a derivative of the original mpv-osc-modern by maoiscat
--- and subsequent forks:
+-- This script is mpv skin for Omarcy based on
+-- ModernZ v0.2.9 (https://github.com/Samillion/ModernZ) here is  a derivative of the original
+-- mpv-osc-modern by maoiscat and subsequent forks:
 --   * cyl0/ModernX
 --   * dexeonify/ModernX
 --
@@ -16,9 +15,9 @@
 -- Reference source:
 --   https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
 --
--- Modified by  timlau on 2026-04-18
+-- Modified by  timlau on 2026-04-19
 --   * add loading colors for colors.conf
---   * fixed some problems in the code
+--   * refactored the original code to make it easier to maintain and readable
 --
 --
 local assdraw = require("mp.assdraw")
@@ -28,7 +27,7 @@ local utils = require("mp.utils")
 
 -- Parameters
 -- default user option values
--- do not touch, change them in modernz.conf
+-- do not touch, change them in script-opt/omarchy.conf
 local user_opts = {
   -- Language and display
   language = "en", -- set language (for available options, see: https://github.com/Samillion/ModernZ/blob/main/docs/TRANSLATIONS.md)
@@ -471,7 +470,7 @@ local function get_locale_from_json(path)
 end
 
 -- load external locales if available
-local locale_path = "~~/script-opts/modernz-locale.json"
+local locale_path = "~~/script-opts/omarchy-locale.json"
 local external = get_locale_from_json(locale_path)
 
 if external then
@@ -1999,13 +1998,13 @@ local function window_controls()
 end
 
 --
--- ModernZ Layout
+-- Layout
 --
 
 local layouts = {}
 
 -- Default layout
-layouts["modern"] = function()
+layouts["omarchy"] = function()
   local no_title = (
     (user_opts.title_mbtn_left_command == "" or user_opts.title_mbtn_left_command == "ignore")
     and (user_opts.title_mbtn_right_command == "" or user_opts.title_mbtn_right_command == "ignore")
@@ -2358,7 +2357,7 @@ layouts["modern"] = function()
   end
 end
 
-layouts["modern-image"] = function()
+layouts["omarchy-image"] = function()
   local osc_geo = {
     w = osc_param.playresx,
     h = 50,
@@ -3494,9 +3493,9 @@ local function osc_init()
 
   -- load layout
   if state.is_image then
-    layouts["modern-image"]()
+    layouts["omarchy-image"]()
   else
-    layouts["modern"]()
+    layouts["omarchy"]()
   end
 
   -- load window controls
@@ -4398,7 +4397,7 @@ local function validate_user_opts()
 end
 
 -- read options from config and command-line
-opt.read_options(user_opts, "modernz", function(changed)
+opt.read_options(user_opts, "omarchy", function(changed)
   validate_user_opts()
   set_osc_locale()
   set_icon_theme()
