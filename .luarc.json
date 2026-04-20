@@ -2,6 +2,12 @@
   "diagnostics.globals": ["mp", "msg", "opts"],
   "runtime.version": "Lua 5.1",
   "workspace.library": [],
+  "diagnostics.disable": [
+    "duplicate-doc-field",
+    "undefined-field",
+    "inject-field",
+    "duplicate-set-field"
+  ],
   "format.defaultConfig": {
     "indent_style": "space",
     "indent_size": "2"

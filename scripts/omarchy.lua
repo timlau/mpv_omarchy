@@ -481,12 +481,14 @@ end
 
 local icons
 local iconfont
+-- Sets the icon theme based on user preferences
 local function set_icon_theme()
   icons = icon_theme[user_opts.icon_theme] or icon_theme["fluent"]
   iconfont = icons.iconfont
 end
 
 local locale
+-- Sets the OSC locale and applies formatting to idle screen text
 local function set_osc_locale()
   locale = language[user_opts.language] or language["en"]
   local idle_ass_tags = "{\\fs24\\1c&H0&\\1c&HFFFFFF&}"
@@ -498,6 +500,7 @@ local function set_osc_locale()
   locale.idle = idle_ass_tags .. locale.idle_plain
 end
 
+-- Checks if a list or comma-separated string contains a specific item
 local function contains(list, item)
   local t = type(list) == "table" and list or {}
   if type(list) ~= "table" then
@@ -543,7 +546,7 @@ local MIN_XLARGE_SCREEN_WIDTH = 1150
 local SOFTREPEAT_FRAMES_BEFORE_REPEAT = 15
 local SOFTREPEAT_FRAME_INTERVAL = 5
 
--- Helper function to sanitize and format titles
+-- Sanitizes and formats titles, handling newlines and ASS escaping
 local function sanitize_title(raw_title, should_escape_ass)
   local title = raw_title or ""
   title = title:gsub("\n", " ")
@@ -556,24 +559,27 @@ local function sanitize_title(raw_title, should_escape_ass)
   return "mpv"
 end
 
--- Helper function to calculate button visibility based on screen width
+-- Determines button visibility based on screen width and adjustments
 local function calculate_button_visibility(current_width, min_width, adjustment_offset)
   return current_width >= (min_width - (adjustment_offset or 0))
 end
 
--- Helper function to format offset values (used for conditional visibility)
+-- Returns visibility offset based on condition (visible or hidden)
 local function get_visibility_offset(condition)
   return condition and ELEMENT_VISIBLE_OFFSET or ELEMENT_HIDDEN_OFFSET
 end
 
--- Helper function to create simple buttons with action handlers
+-- Creates a simple button element with specified content
+local new_element
 local function create_button_element(name, content_value)
   local ne = new_element(name, "button")
   ne.content = content_value
   return ne
 end
 
--- Helper function to setup common slider event handlers
+-- Sets up common slider event handlers for value tracking and updates
+local get_slider_value
+local set_volume
 local function setup_slider_value_tracking(element)
   element.eventresponder["mouse_move"] = function(elem)
     local pos = get_slider_value(elem)
@@ -588,6 +594,7 @@ local function setup_slider_value_tracking(element)
   end
 end
 
+-- Converts RGB color format to BGR format for ASS compatibility
 local function osc_color_convert(color)
   return color:sub(6, 7) .. color:sub(4, 5) .. color:sub(2, 3)
 end
@@ -799,12 +806,14 @@ local santa_hat_lines = {
 -- Helper functions
 --
 
+-- Stops any active animation and clears animation state
 local function kill_animation()
   state.anistart = nil
   state.animation = nil
   state.anitype = nil
 end
 
+-- Updates the OSD overlay with new content and resolution
 local function set_osd(res_x, res_y, text, z)
   if state.osd.res_x == res_x and state.osd.res_y == res_y and state.osd.data == text then
     return
@@ -816,6 +825,7 @@ local function set_osd(res_x, res_y, text, z)
   state.osd:update()
 end
 
+-- Updates time display styles based on user option changes
 local function set_time_styles(timetotal_changed, timems_changed)
   if timetotal_changed then
     state.tc_right_rem = not user_opts.timetotal
@@ -825,7 +835,7 @@ local function set_time_styles(timetotal_changed, timems_changed)
   end
 end
 
--- scale factor for translating between real and virtual ASS coordinates
+-- Calculates scale factor for translating between real and virtual coordinates
 local function get_virt_scale_factor()
   local w, h = mp.get_osd_size()
   if w <= 0 or h <= 0 then
@@ -834,6 +844,7 @@ local function get_virt_scale_factor()
   return osc_param.playresx / w, osc_param.playresy / h
 end
 
+-- Checks if screen was recently touched within the last second
 local function recently_touched()
   if state.touchtime == nil then
     return false
@@ -841,7 +852,7 @@ local function recently_touched()
   return state.touchtime + 1 >= mp.get_time()
 end
 
--- return mouse position in virtual ASS coordinates (playresx/y)
+-- Returns mouse or touch position in virtual ASS coordinates
 local function get_virt_mouse_pos()
   if recently_touched() then
     local sx, sy = get_virt_scale_factor()
@@ -855,6 +866,7 @@ local function get_virt_mouse_pos()
   end
 end
 
+-- Registers a virtual mouse area in mpv coordinates
 local function set_virt_mouse_area(x0, y0, x1, y1, name)
   local sx, sy = get_virt_scale_factor()
   if sx == 0 or sy == 0 then
@@ -864,14 +876,14 @@ local function set_virt_mouse_area(x0, y0, x1, y1, name)
   mp.set_mouse_area(x0 / sx, y0 / sy, x1 / sx, y1 / sy, name)
 end
 
+-- Scales a value from one range to another using linear mapping
 local function scale_value(x0, x1, y0, y1, val)
   local m = (y1 - y0) / (x1 - x0)
   local b = y0 - (m * x0)
   return (m * val) + b
 end
 
--- returns hitbox spanning coordinates (top left, bottom right corner)
--- according to alignment
+-- Calculates hitbox coordinates based on position, alignment, and dimensions
 local function get_hitbox_coords(x, y, an, w, h)
   local alignments = {
     [1] = function()
@@ -908,23 +920,28 @@ local function get_hitbox_coords(x, y, an, w, h)
   return alignments[an]()
 end
 
+-- Calculates hitbox coordinates from a geometry table
 local function get_hitbox_coords_geo(geometry)
   return get_hitbox_coords(geometry.x, geometry.y, geometry.an, geometry.w, geometry.h)
 end
 
+-- Returns the hitbox coordinates of an element
 local function get_element_hitbox(element)
   return element.hitbox.x1, element.hitbox.y1, element.hitbox.x2, element.hitbox.y2
 end
 
+-- Checks if mouse is within specified coordinate bounds
 local function mouse_hit_coords(bX1, bY1, bX2, bY2)
   local mX, mY = get_virt_mouse_pos()
   return (mX >= bX1 and mX <= bX2 and mY >= bY1 and mY <= bY2)
 end
 
+-- Checks if mouse is hovering over an element
 local function mouse_hit(element)
   return mouse_hit_coords(get_element_hitbox(element))
 end
 
+-- Clamps a value within a specified minimum and maximum range
 local function limit_range(min, max, val)
   if val > max then
     val = max
@@ -934,7 +951,7 @@ local function limit_range(min, max, val)
   return val
 end
 
--- translate value into element coordinates
+-- Converts a slider value to element position coordinates
 local function get_slider_ele_pos_for(element, val)
   local ele_pos = scale_value(
     element.slider.min.value,
@@ -947,7 +964,7 @@ local function get_slider_ele_pos_for(element, val)
   return limit_range(element.slider.min.ele_pos, element.slider.max.ele_pos, ele_pos)
 end
 
--- translates global (mouse) coordinates to value
+-- Converts global mouse coordinates to a slider value
 local function get_slider_value_at(element, glob_pos)
   if element then
     local val = scale_value(
@@ -964,16 +981,17 @@ local function get_slider_value_at(element, glob_pos)
   return 0
 end
 
--- get value at current mouse position
+-- Gets the slider value at the current mouse position
 local function get_slider_value(element)
   return get_slider_value_at(element, get_virt_mouse_pos())
 end
 
--- multiplies two alpha values, formula can probably be improved
+-- Multiplies two alpha values to calculate composite transparency
 local function mult_alpha(alphaA, alphaB)
   return 255 - (((1 - (alphaA / 255)) * (1 - (alphaB / 255))) * 255)
 end
 
+-- Registers a mouse interaction area with specified coordinates
 local function add_area(name, x1, y1, x2, y2)
   -- create area if needed
   if osc_param.areas[name] == nil then
@@ -982,6 +1000,7 @@ local function add_area(name, x1, y1, x2, y2)
   table.insert(osc_param.areas[name], { x1 = x1, y1 = y1, x2 = x2, y2 = y2 })
 end
 
+-- Appends alpha transparency values to ASS formatting string
 local function ass_append_alpha(ass, alpha, modifier, inverse)
   local ar = {}
 
@@ -1000,10 +1019,12 @@ local function ass_append_alpha(ass, alpha, modifier, inverse)
   ass:append(string.format("{\\1a&H%X&\\2a&H%X&\\3a&H%X&\\4a&H%X&}", ar[1], ar[2], ar[3], ar[4]))
 end
 
+-- Draws a circle using ASS drawing commands
 local function ass_draw_cir_cw(ass, x, y, r)
   ass:round_rect_cw(x - r, y - r, x + r, y + r, r)
 end
 
+-- Draws a rounded rectangle or hexagon shape using ASS commands
 local function ass_draw_rr_h_cw(ass, x0, y0, x1, y1, r1, hexagon, r2)
   if hexagon then
     ass:hexagon_cw(x0, y0, x1, y1, r1, r2)
@@ -1012,6 +1033,7 @@ local function ass_draw_rr_h_cw(ass, x0, y0, x1, y1, r1, hexagon, r2)
   end
 end
 
+-- Returns the auto-hide timeout duration in milliseconds
 local function get_hidetimeout()
   if user_opts.visibility == "always" then
     return -1 -- disable autohide
@@ -1019,6 +1041,7 @@ local function get_hidetimeout()
   return user_opts.hidetimeout
 end
 
+-- Returns the remaining time before OSC hides after touch
 local function get_touchtimeout()
   if state.touchtime == nil then
     return 0
@@ -1026,10 +1049,12 @@ local function get_touchtimeout()
   return state.touchtime + (get_hidetimeout() / 1000) - mp.get_time()
 end
 
+-- Checks if media caching is enabled and has seekable ranges
 local function cache_enabled()
   return state.cache_state and #state.cache_state["seekable-ranges"] > 0
 end
 
+-- Updates video margins based on OSC visibility and settings
 local function update_margins()
   local margins = osc_param.video_margins
 
@@ -1047,9 +1072,7 @@ local function update_margins()
 end
 
 local tick
--- Request that tick() is called (which typically re-renders the OSC).
--- The tick is then either executed immediately, or rate-limited if it was
--- called a small time ago.
+-- Requests a tick for OSC re-rendering with rate limiting
 local function request_tick()
   if state.tick_timer == nil then
     state.tick_timer = mp.add_timeout(0, tick)
@@ -1066,12 +1089,13 @@ local function request_tick()
   end
 end
 
+-- Requests re-initialization of the OSC layout and elements
 local function request_init()
   state.initREQ = true
   request_tick()
 end
 
--- Like request_init(), but also request an immediate update
+-- Requests immediate re-initialization of OSC for window resize
 local function request_init_resize()
   request_init()
   -- ensure immediate update
@@ -1080,6 +1104,7 @@ local function request_init_resize()
   state.tick_timer:resume()
 end
 
+-- Clears and removes the OSD display
 local function render_wipe()
   msg.trace("render_wipe()")
   state.osd.data = "" -- allows set_osd to immediately update on enable
@@ -1090,7 +1115,7 @@ end
 -- Tracklist Management
 --
 
--- updates the OSC internal playlists, should be run each time the track-layout changes
+-- Updates audio and subtitle track counts from the current track list
 local function update_tracklist()
   audio_track_count, sub_track_count = 0, 0
 
@@ -1103,7 +1128,7 @@ local function update_tracklist()
   end
 end
 
--- convert slider_pos to logarithmic depending on volume_control user_opts
+-- Converts slider position to volume, applying logarithmic scaling if configured
 local function set_volume(slider_pos)
   local volume = slider_pos
   local volume_max = get_volume_max()
@@ -1113,7 +1138,7 @@ local function set_volume(slider_pos)
   return math.floor(volume)
 end
 
--- WindowControl helpers
+-- Determines if window control buttons should be displayed
 local function window_controls_enabled()
   local val = user_opts.window_top_bar
   if val == "auto" then
@@ -1128,6 +1153,7 @@ end
 --
 local elements = {}
 
+-- Prepares OSC elements by sorting, calculating hitboxes, and styling
 local function prepare_elements()
   -- remove elements without layout or invisible
   local elements2 = {}
@@ -1252,7 +1278,7 @@ end
 -- Element Rendering
 --
 
--- returns nil or a chapter element from the native property chapter-list
+-- Retrieves the chapter that is active at the specified time position
 local function get_chapter(possec)
   local cl = state.chapter_list -- sorted, get latest before possec, if any
 
@@ -1263,8 +1289,7 @@ local function get_chapter(possec)
   end
 end
 
--- Draws a handle on the seekbar according to user_opts
--- Returns handle position and radius
+-- Draws seekbar handle and returns its position and radius
 local function draw_seekbar_handle(element, elem_ass, override_alpha)
   local pos = element.slider.posF()
   if not pos then
@@ -1303,7 +1328,7 @@ local function draw_seekbar_handle(element, elem_ass, override_alpha)
   return xp, 0
 end
 
--- Draws seekbar ranges according to user_opts
+-- Draws cached/buffered ranges on the seekbar
 local function draw_seekbar_ranges(element, elem_ass, xp, rh, override_alpha)
   local handle = xp ~= nil and (rh or 0) > 0
   xp = xp or 0
@@ -1347,7 +1372,7 @@ local function draw_seekbar_ranges(element, elem_ass, xp, rh, override_alpha)
   end
 end
 
--- Draw seekbar progress more accurately
+-- Draws the playback progress bar on the seekbar
 local function draw_seekbar_progress(element, elem_ass)
   local pos = element.slider.posF()
   if not pos then
@@ -1364,6 +1389,7 @@ local function draw_seekbar_progress(element, elem_ass)
   end
 end
 
+-- Renders all OSC elements and adds them to the master ASS object
 local function render_elements(master_ass)
   -- when the slider is dragged or hovered and we have a target chapter name
   -- then we use it instead of the normal title. we calculate it before the
@@ -1671,7 +1697,8 @@ local function render_elements(master_ass)
   end
 end
 
-local function render_persistentprogressbar(master_ass)
+-- Renders the persistent progress bar overlay
+local function render_persistentprogressbar(ass)
   for n = 1, #elements do
     local element = elements[n]
     if element.name == "persistentseekbar" then
@@ -1703,6 +1730,7 @@ end
 --
 -- Initialisation and Layout
 --
+-- Checks if a string is a valid URL
 local function is_url(s)
   if not s then
     return false
@@ -1712,6 +1740,7 @@ local function is_url(s)
   return string.match(s, url_pattern) ~= nil
 end
 
+-- Executes subprocess command to fetch file size asynchronously
 local function exec_filesize(args)
   for i = #args, 1, -1 do
     if args[i] == nil or args[i] == "" then
@@ -1770,6 +1799,7 @@ local function exec_filesize(args)
   end)
 end
 
+-- Handles completion of file download and displays status message
 local function download_done(success, result, err)
   if success then
     local download_path = mp.command_native({ "expand-path", user_opts.download_path })
@@ -1783,6 +1813,7 @@ local function download_done(success, result, err)
   state.downloading = false
 end
 
+-- Executes a subprocess command asynchronously with callback
 local function exec(args, callback)
   for i = #args, 1, -1 do
     if args[i] == nil or args[i] == "" then
@@ -1802,6 +1833,7 @@ local function exec(args, callback)
   return ret
 end
 
+-- Checks if the current file is a URL and initiates download info fetching
 local function check_path_url()
   state.is_URL = false
   state.downloading = false
@@ -1840,6 +1872,7 @@ local function check_path_url()
   end
 end
 
+-- Creates a new OSC element with default properties and event handlers
 local function new_element(name, type)
   elements[name] = {}
   elements[name].type = type
@@ -1861,6 +1894,7 @@ local function new_element(name, type)
   return elements[name]
 end
 
+-- Adds layout properties to an existing element
 local function add_layout(name)
   if elements[name] ~= nil then
     -- new layout
@@ -1900,7 +1934,7 @@ local function add_layout(name)
   end
 end
 
--- Window Controls
+-- Sets up window control buttons (minimize, maximize, close)
 local function window_controls()
   local wc_geo = {
     x = 0,
@@ -2517,6 +2551,7 @@ layouts["omarchy-image"] = function()
   end
 end
 
+-- Adjusts subtitle position based on OSC visibility
 local function adjust_subtitles(visible)
   if not mp.get_property_native("sid") then
     return
@@ -2561,6 +2596,7 @@ local function adjust_subtitles(visible)
   end
 end
 
+-- Detects if the current file is an image and updates state
 local function is_image()
   local current_track = mp.get_property_native("current-tracks/video")
   if current_track and current_track.image and not current_track.albumart then
@@ -2570,6 +2606,7 @@ local function is_image()
   end
 end
 
+-- Updates OSC visibility state and related margins and subtitles
 local function osc_visible(visible)
   if state.osc_visible ~= visible then
     state.osc_visible = visible
@@ -2579,6 +2616,7 @@ local function osc_visible(visible)
   request_tick()
 end
 
+-- Creates a callback function that executes an mpv command
 local function command_callback(command)
   if command ~= "" and command ~= "ignore" then
     return function()
@@ -2587,6 +2625,7 @@ local function command_callback(command)
   end
 end
 
+-- Initializes the OSC, creates all elements, and sets up layouts
 local function osc_init()
   msg.debug("osc_init")
 
@@ -3497,6 +3536,7 @@ local function osc_init()
   update_margins()
 end
 
+-- Shows the OSC with fade-in animation if configured
 local function show_osc()
   -- show when disabled can happen (e.g. mouse_move) due to async/delayed unbinding
   if not state.enabled then
@@ -3520,6 +3560,7 @@ local function show_osc()
   end
 end
 
+-- Hides the OSC with fade-out animation if configured
 local function hide_osc()
   msg.trace("hide_osc")
   if thumbfast.width ~= 0 and thumbfast.height ~= 0 then
@@ -3541,16 +3582,19 @@ local function hide_osc()
   end
 end
 
+-- Updates pause state and requests OSC re-rendering
 local function pause_state(_, enabled)
   state.paused = enabled
   request_tick()
 end
 
+-- Updates cache state and requests OSC re-rendering
 local function cache_state(_, st)
   state.cache_state = st
   request_tick()
 end
 
+-- Handles mouse leaving the window and triggers OSC auto-hide
 local function mouse_leave()
   state.touchtime = nil
 
@@ -3567,6 +3611,7 @@ local function mouse_leave()
   state.mouse_in_window = false
 end
 
+-- Handles touch events and updates touch position state
 local function handle_touch(_, touchpoints)
   --remember last touch points
   if touchpoints then
@@ -3583,14 +3628,17 @@ end
 --
 -- Event handling
 --
+-- Resets the OSC auto-hide timer to the current time
 local function reset_timeout()
   state.showtime = mp.get_time()
 end
 
+-- Checks if an element has a handler for the specified action
 local function element_has_action(element, action)
   return element and element.eventresponder and element.eventresponder[action]
 end
 
+-- Processes mouse button down/press events on OSC elements
 local function process_event_down_press(action, source, what)
   reset_timeout() -- clicking resets the hideosc timer
 
@@ -3612,6 +3660,7 @@ local function process_event_down_press(action, source, what)
   end
 end
 
+-- Processes mouse button release events on OSC elements
 local function process_event_up(action)
   if elements[state.active_element] then
     local n = state.active_element
@@ -3631,6 +3680,7 @@ local function process_event_up(action)
   state.mouse_down_counter = 0
 end
 
+-- Processes mouse movement events and shows/hides OSC as needed
 local function process_event_mouse_move(action)
   state.mouse_in_window = true
 
@@ -3676,6 +3726,7 @@ local function process_event_mouse_move(action)
   end
 end
 
+-- Routes input events to the appropriate event handler
 local function process_event(source, what)
   local action = string.format("%s%s", source, what and ("_" .. what) or "")
 
@@ -3691,6 +3742,7 @@ local function process_event(source, what)
   request_tick()
 end
 
+-- Enables mpv key bindings for show/hide and window control
 local function do_enable_keybindings()
   if state.enabled then
     if not state.showhide_enabled then
@@ -3701,6 +3753,7 @@ local function do_enable_keybindings()
   end
 end
 
+-- Enables or disables the OSC and its key bindings
 local function enable_osc(enable)
   state.enabled = enable
   if enable then
@@ -3715,6 +3768,7 @@ local function enable_osc(enable)
   end
 end
 
+-- Main render function that updates OSC display every frame
 local function render()
   msg.trace("rendering")
   local current_screen_sizeX, current_screen_sizeY = mp.get_osd_size()
@@ -3957,11 +4011,13 @@ end
 -- positions. live streams with chapters are very rare, and the update is also
 -- expensive (with request_init), so it's only observed when we have chapters
 -- and the user didn't disable the livemarkers option (update_duration_watch).
+-- Handles duration property changes to update chapter markers
 local function on_duration()
   request_init()
 end
 
 local duration_watched = false
+-- Watches/unwatches duration property based on chapter availability
 local function update_duration_watch()
   local want_watch = user_opts.livemarkers and (mp.get_property_number("chapters", 0) or 0) > 0 and true or
   false                                                                                                           -- ensure it's a boolean
@@ -3976,6 +4032,7 @@ local function update_duration_watch()
   end
 end
 
+-- Sets render tick delay based on display refresh rate
 local function set_tick_delay(_, display_fps)
   -- may be nil if unavailable or 0 fps is reported
   if not display_fps or not user_opts.tick_delay_follow_display_fps then
@@ -4186,6 +4243,7 @@ mp.set_key_bindings({
 }, "window-controls", "force")
 mp.enable_key_bindings("window-controls")
 
+-- Shows or hides OSC immediately when in "always" visibility mode
 local function always_on(val)
   if state.enabled then
     if val then
@@ -4196,8 +4254,7 @@ local function always_on(val)
   end
 end
 
--- mode can be auto/always/never/cycle
--- the modes only affect internal variables and not stored on its own.
+-- Changes OSC visibility mode between auto, always, never, or cycles through them
 local function visibility_mode(mode, no_osd)
   if mode == "cycle" then
     for i, allowed_mode in ipairs(state.visibility_modes) do
@@ -4242,6 +4299,7 @@ local function visibility_mode(mode, no_osd)
   request_tick()
 end
 
+-- Toggles or sets the idle screen logo visibility
 local function idlescreen_visibility(mode, no_osd)
   if mode == "cycle" then
     if user_opts.idlescreen then
@@ -4320,7 +4378,7 @@ mp.register_script_message("thumbfast-info", function(json)
   end
 end)
 
--- validate string type user options
+-- Validates and loads user options from config files
 local function validate_user_opts()
   if user_opts.window_top_bar ~= "auto" and user_opts.window_top_bar ~= "yes" and user_opts.window_top_bar ~= "no" then
     msg.warn("window_top_bar cannot be '" .. user_opts.window_top_bar .. "'. Ignoring.")
