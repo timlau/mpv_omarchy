@@ -1691,7 +1691,7 @@ local function render_elements(master_ass)
 end
 
 -- Renders the persistent progress bar overlay
-local function render_persistentprogressbar(ass)
+local function render_persistentprogressbar(master_ass)
   for n = 1, #elements do
     local element = elements[n]
     if element.name == "persistentseekbar" then
