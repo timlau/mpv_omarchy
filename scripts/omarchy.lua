@@ -1,23 +1,12 @@
--- This script is mpv skin for Omarcy based on
--- ModernZ v0.2.9 (https://github.com/Samillion/ModernZ) here is a derivative of the original
--- mpv-osc-modern by maoiscat and subsequent forks:
---   * cyl0/ModernX
---   * dexeonify/ModernX
+-- This script is mpv OSC for Omarcy 
 --
--- It is based on the official osc.lua from mpv, licensed under the
+-- It is based on the official osc.lua from mpv and other derived work, licensed under the
 -- GNU Lesser General Public License v2.1 (LGPLv2.1).
+-- 
 -- Preserve this notice and the upstream attribution when redistributing this
 -- file or derivative works.
 --
--- Distribute the full LGPLv2.1 license text as a separate file packaged
--- alongside this script (in this repo: config/mpv/LICENSES/LICENSE.LGPL)
--- rather than embedding the full license text in this source file.
--- Reference source:
---   https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
---
--- Modified by  timlau on 2026-04-19
---   * add loading colors for colors.conf
---   * refactored the original code to make it easier to maintain and readable
+-- Check Readme.md for details about attribution and Licensing.
 --
 --
 local assdraw = require("mp.assdraw")
