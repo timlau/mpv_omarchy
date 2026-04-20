@@ -538,13 +538,6 @@ local ELEMENT_HIDDEN_OFFSET = 100
 local ELEMENT_VISIBLE_OFFSET = 0
 local MIN_SMALL_SCREEN_WIDTH = 300
 local MIN_NORMAL_SCREEN_WIDTH = 500
-local MIN_MEDIUM_SCREEN_WIDTH = 400
-local MIN_LARGE_SCREEN_WIDTH = 550
-local MIN_XLARGE_SCREEN_WIDTH = 1150
-
--- Softrepeat timing
-local SOFTREPEAT_FRAMES_BEFORE_REPEAT = 15
-local SOFTREPEAT_FRAME_INTERVAL = 5
 
 -- Sanitizes and formats titles, handling newlines and ASS escaping
 local function sanitize_title(raw_title, should_escape_ass)
